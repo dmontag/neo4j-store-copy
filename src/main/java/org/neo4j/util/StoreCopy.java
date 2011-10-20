@@ -58,7 +58,8 @@ public class StoreCopy
 
         targetDb.shutdown();
         sourceDb.shutdown();
-        // copyIndex( source, target );
+//        copyIndex( source, target );
+        System.out.println("Done.");
     }
 
     private static void copyNodes( GraphDatabaseService sourceDb, BatchInserter targetDb )
