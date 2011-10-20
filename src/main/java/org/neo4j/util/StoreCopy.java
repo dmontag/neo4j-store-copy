@@ -20,13 +20,15 @@ public class StoreCopy
     {
         String sourceDir = args[0];
         String targetDir = args[1];
-        copyStore( sourceDir, targetDir );
+        String configFile = args[2];
+        copyStore( sourceDir, targetDir, configFile );
     }
 
-    private static void copyStore( String sourceDir, String targetDir ) throws Exception
+    private static void copyStore( String sourceDir, String targetDir, String configFile ) throws Exception
     {
         File target = new File( targetDir );
         File source = new File( sourceDir );
+        File config = new File( configFile );
         if ( target.exists() )
         {
             throw new IllegalArgumentException( "Target already exists: " + target );
@@ -35,9 +37,14 @@ public class StoreCopy
         {
             throw new IllegalArgumentException( "Source does not exist: " + source );
         }
+        if ( !config.exists() )
+        {
+            throw new IllegalArgumentException( "Config does not exist: " + configFile );
+        }
 
         BatchInserter targetDb = new BatchInserterImpl( target.getAbsolutePath() );
-        GraphDatabaseService sourceDb = new EmbeddedGraphDatabase( source.getAbsolutePath() );
+        GraphDatabaseService sourceDb = new EmbeddedGraphDatabase( source.getAbsolutePath(),
+            EmbeddedGraphDatabase.loadConfigurations( config.getAbsolutePath() ) );
 
         copyNodes( sourceDb, targetDb );
         copyRelationships( sourceDb, targetDb );
