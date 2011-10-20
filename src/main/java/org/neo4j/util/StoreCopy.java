@@ -14,6 +14,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.kernel.EmbeddedGraphDatabase;
 import org.neo4j.kernel.impl.batchinsert.BatchInserter;
 import org.neo4j.kernel.impl.batchinsert.BatchInserterImpl;
+import org.neo4j.kernel.impl.nioneo.store.InvalidRecordException;
 
 public class StoreCopy
 {
@@ -54,12 +55,12 @@ public class StoreCopy
                 EmbeddedGraphDatabase.loadConfigurations( targetConfigFile.getAbsolutePath() ) );
 
         copyNodes( sourceDb, targetDb );
-        copyRelationships( sourceDb, targetDb, Boolean.getBoolean( "neo4j.incoming" ) ? new HashSet<Long>() : null );
+        copyRelationships( sourceDb, targetDb, Boolean.getBoolean( "direction.both" ) ? new HashSet<Long>() : null );
 
         targetDb.shutdown();
         sourceDb.shutdown();
-//        copyIndex( source, target );
-        System.out.println("Done.");
+        // copyIndex( source, target );
+        System.out.println( "Done." );
     }
 
     private static void copyNodes( GraphDatabaseService sourceDb, BatchInserter targetDb )
@@ -93,8 +94,15 @@ public class StoreCopy
             {
                 if ( seen == null || seen.add( sourceRel.getId() ) )
                 {
-                    targetDb.createRelationship( sourceRel.getStartNode().getId(), sourceRel.getEndNode().getId(),
-                            sourceRel.getType(), getProperties( sourceRel ) );
+                    try
+                    {
+                        targetDb.createRelationship( sourceRel.getStartNode().getId(), sourceRel.getEndNode().getId(),
+                                sourceRel.getType(), getProperties( sourceRel ) );
+                    }
+                    catch ( InvalidRecordException e )
+                    {
+                        e.printStackTrace();
+                    }
                 }
                 count++;
                 if ( count % 1000 == 0 ) System.out.print( "." );
@@ -103,19 +111,19 @@ public class StoreCopy
         }
     }
 
-    // private static void copyIndex( File source, File target ) throws IOException
-    // {
-    // File indexFile = new File( source, "index.db" );
-    // if ( indexFile.exists() )
-    // {
-    // FileUtils.copyFile( indexFile, new File( target, "index.db" ) );
-    // }
-    // File indexDir = new File( source, "index" );
-    // if ( indexDir.exists() )
-    // {
-    // FileUtils.copyDirectory( indexDir, new File( target, "index" ) );
-    // }
-    // }
+//    private static void copyIndex( File source, File target ) throws IOException
+//    {
+//        File indexFile = new File( source, "index.db" );
+//        if ( indexFile.exists() )
+//        {
+//            FileUtils.copyFile( indexFile, new File( target, "index.db" ) );
+//        }
+//        File indexDir = new File( source, "index" );
+//        if ( indexDir.exists() )
+//        {
+//            FileUtils.copyDirectory( indexDir, new File( target, "index" ) );
+//        }
+//    }
 
     private static Map<String, Object> getProperties( PropertyContainer pc )
     {
