@@ -101,7 +101,8 @@ public class StoreCopy
                     }
                     catch ( InvalidRecordException e )
                     {
-                        e.printStackTrace();
+                        System.err.println( "Failed to recreate " + sourceRel + ": " + e.getMessage() );
+                        e.printStackTrace( System.err );
                     }
                 }
                 count++;
