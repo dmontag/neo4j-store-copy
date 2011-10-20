@@ -20,31 +20,34 @@ public class StoreCopy
     {
         String sourceDir = args[0];
         String targetDir = args[1];
-        String configFile = args[2];
-        copyStore( sourceDir, targetDir, configFile );
+        String sourceConfigFile = args[2];
+        String targetConfigFile = args[2];
+        copyStore( new File(sourceDir), new File(targetDir), new File(sourceConfigFile), new File(targetConfigFile) );
     }
 
-    private static void copyStore( String sourceDir, String targetDir, String configFile ) throws Exception
+    private static void copyStore( File sourceDir, File targetDir, File sourceConfigFile, File targetConfigFile ) throws Exception
     {
-        File target = new File( targetDir );
-        File source = new File( sourceDir );
-        File config = new File( configFile );
-        if ( target.exists() )
+        if ( targetDir.exists() )
         {
-            throw new IllegalArgumentException( "Target already exists: " + target );
+            throw new IllegalArgumentException( "Target already exists: " + targetDir );
         }
-        if ( !source.exists() )
+        if ( !sourceDir.exists() )
         {
-            throw new IllegalArgumentException( "Source does not exist: " + source );
+            throw new IllegalArgumentException( "Source does not exist: " + sourceDir );
         }
-        if ( !config.exists() )
+        if ( !sourceConfigFile.exists() )
         {
-            throw new IllegalArgumentException( "Config does not exist: " + configFile );
+            throw new IllegalArgumentException( "Source config does not exist: " + sourceConfigFile );
+        }
+        if ( !targetConfigFile.exists() )
+        {
+            throw new IllegalArgumentException( "Target config does not exist: " + targetConfigFile );
         }
 
-        BatchInserter targetDb = new BatchInserterImpl( target.getAbsolutePath() );
-        GraphDatabaseService sourceDb = new EmbeddedGraphDatabase( source.getAbsolutePath(),
-            EmbeddedGraphDatabase.loadConfigurations( config.getAbsolutePath() ) );
+        GraphDatabaseService sourceDb = new EmbeddedGraphDatabase( sourceDir.getAbsolutePath(),
+            EmbeddedGraphDatabase.loadConfigurations( sourceConfigFile.getAbsolutePath() ) );
+        BatchInserter targetDb = new BatchInserterImpl( targetDir.getAbsolutePath(),
+            EmbeddedGraphDatabase.loadConfigurations( targetConfigFile.getAbsolutePath() ) );
 
         copyNodes( sourceDb, targetDb );
         copyRelationships( sourceDb, targetDb );
