@@ -21,7 +21,7 @@ public class StoreCopy
         String sourceDir = args[0];
         String targetDir = args[1];
         String sourceConfigFile = args[2];
-        String targetConfigFile = args[2];
+        String targetConfigFile = args[3];
         copyStore( new File(sourceDir), new File(targetDir), new File(sourceConfigFile), new File(targetConfigFile) );
     }
 
