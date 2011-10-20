@@ -86,23 +86,18 @@ public class StoreCopy
     {
         System.out.println( "Copying relationships" );
         int count = 0;
-        Direction[] directions = ( seen == null ? new Direction[] { Direction.OUTGOING } : new Direction[] {
-                Direction.OUTGOING, Direction.INCOMING } );
         for ( Node node : sourceDb.getAllNodes() )
         {
-            for ( Direction dir : directions )
+            for ( Relationship sourceRel : node.getRelationships( seen == null ? Direction.OUTGOING : Direction.BOTH ) )
             {
-                for ( Relationship sourceRel : node.getRelationships( dir ) )
+                if ( seen == null || seen.add( sourceRel.getId() ) )
                 {
-                    if ( seen == null || seen.add( sourceRel.getId() ) )
-                    {
-                        targetDb.createRelationship( sourceRel.getStartNode().getId(), sourceRel.getEndNode().getId(),
-                                sourceRel.getType(), getProperties( sourceRel ) );
-                    }
-                    count++;
-                    if ( count % 1000 == 0 ) System.out.print( "." );
-                    if ( count % 50000 == 0 ) System.out.println( " " + count );
+                    targetDb.createRelationship( sourceRel.getStartNode().getId(), sourceRel.getEndNode().getId(),
+                            sourceRel.getType(), getProperties( sourceRel ) );
                 }
+                count++;
+                if ( count % 1000 == 0 ) System.out.print( "." );
+                if ( count % 50000 == 0 ) System.out.println( " " + count );
             }
         }
     }
